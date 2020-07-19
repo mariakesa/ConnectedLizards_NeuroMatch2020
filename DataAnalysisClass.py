@@ -151,7 +151,7 @@ class DataAnalysis():
         print(rates_lst.shape)
         return rates_lst
 
-        
+
     def CCA_analysis(self,recordings_index,trial_index,brain_area):
         path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
 
@@ -188,3 +188,7 @@ class DataAnalysis():
 
         print(beh_subset_aligned.shape)
         print(rates.shape)
+
+all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
+selected_recordings=['Richards_2017-10-31.tar']
+dat_an=DataAnalysis(all_data_path,selected_recordings)
