@@ -186,6 +186,17 @@ class DataAnalysis():
         plt.scatter(X_train_r[:, 1], Y_train_r[:], label="train",
             marker="*", c="b", s=50)
 
+        #Can't do analysis on other trials because the number of timepoints is different!
+        #E.g. the analysis below fails
+        #rates_test=self.convert_one_population_to_rates(recordings_index,2,brain_area).T
+
+        #X_test_r, Y_test_r = cca.transform(rates_test, beh_subset_aligned)
+        #plt.scatter(X_test_r[:, 0], Y_test_r[:], label="test",
+            #marker="^", c="b", s=50)
+
+        #plt.show()
+
+
         print(beh_subset_aligned.shape)
         print(rates.shape)
 
