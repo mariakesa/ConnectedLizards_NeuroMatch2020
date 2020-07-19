@@ -95,7 +95,7 @@ class DataAnalysis():
         
         rate=np.array(r).flatten()
         beh_subset_aligned=self.align_rate_and_behavior(beh_subset,rate).flatten()
-        print('Correlation coefficient between rate and behavior: '+str(np.corrcoef(beh_subset_aligned,rate)))
+        print('Correlation coefficient between rate and behavior: '+str(np.corrcoef(beh_subset_aligned,rate)[0,1]))
         
     def align_rate_and_behavior(self,beh_subset,rate):
         rate_shp=rate.shape[0]
