@@ -77,10 +77,12 @@ class DataAnalysis():
         
         #Plot instantaneous firing rate
         kernel = kernels.GaussianKernel(sigma=0.1*pq.s, invert=True)
-        r=instantaneous_rate(spk_tr,t_start=trials[trial_index][0]*pq.s,t_stop=trials[trial_index][1]*pq.s, sampling_period=0.01*pq.s, kernel=kernel) #cutoff=5.0)
+        #sampling_rate the same as behavior
+        r=instantaneous_rate(spk_tr,t_start=trials[trial_index][0]*pq.s,t_stop=trials[trial_index][1]*pq.s, sampling_period=0.02524578*pq.s, kernel=kernel) #cutoff=5.0)
         plt.plot(r)
         plt.title('Instantaneous rate for one trial')
         plt.show()
+        print('r shape',r.shape)
         
         #Plot behavior motion energy
         beh_range= np.bitwise_and(mot_timestamps[:,1]>=trials[trial_index][0],mot_timestamps[:,1]<=trials[trial_index][1])
@@ -90,5 +92,15 @@ class DataAnalysis():
         plt.plot(mot_timestamps[beh_range][:,1].flatten(),beh_subset)
         plt.title('Motion energy in trial')
         plt.show()
+        
+        rate=np.array(r).flatten()
+        beh_subset_aligned=self.align_rate_and_behavior(beh_subset,rate).flatten()
+        print('Correlation coefficient between rate and behavior: '+str(np.corrcoef(beh_subset_aligned,rate)))
+        
+    def align_rate_and_behavior(self,beh_subset,rate):
+        rate_shp=rate.shape[0]
+        beh_subset_aligned=beh_subset[:rate_shp]
+        return beh_subset_aligned
+        
         
         
