@@ -16,6 +16,13 @@ class DataAnalysis():
         '''
         Initialize class with path to all data and a list containing the name of the recordings
         to be analyzed. 
+
+	Example usage:
+	
+	all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
+	selected_recordings=['Richards_2017-10-31.tar']
+	dat_an=DataAnalysis(all_data_path,selected_recordings)
+	dat_an.plot_one_trial_one_neuron(0,0,611)
         '''
         self.all_data_path=all_data_path
         self.selected_recordings=selected_recordings
