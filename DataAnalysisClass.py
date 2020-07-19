@@ -10,23 +10,6 @@ from elephant.statistics import instantaneous_rate,time_histogram
 import neo
 from elephant import kernels
 from quantities import Hz, s, ms
-import tarfile
-
-def unzip_files(path_to_zip_files,path_to_unzip_files):
-    '''
-    Function for unzip all data files into a single directory.
-    
-    '''
-    extension = ".tar"
-
-    os.chdir(path_to_zip_files) # change directory from working dir to dir with files
-
-    for item in os.listdir(path_to_zip_files): # loop through items in dir
-        if item.endswith(extension): # check for ".zip" extension
-            file_name = os.path.abspath(item) # get full path of files
-            tar = tarfile.open(file_name, "r:")
-            tar.extractall(path_to_unzip_files+'/'+str(item))
-            tar.close()
 
 class DataAnalysis():
     def __init__(self,all_data_path, selected_recordings):
@@ -34,15 +17,17 @@ class DataAnalysis():
         Initialize class with path to all data and a list containing the name of the recordings
         to be analyzed. 
 
-	Example usage:
-	
-	all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
-	selected_recordings=['Richards_2017-10-31.tar']
-	dat_an=DataAnalysis(all_data_path,selected_recordings)
-	dat_an.plot_one_trial_one_neuron(0,0,611)
+        Example usage:
+
+        all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
+        selected_recordings=['Richards_2017-10-31.tar']
+        dat_an=DataAnalysis(all_data_path,selected_recordings)
+        dat_an.plot_one_trial_one_neuron(0,0,611)
         '''
         self.all_data_path=all_data_path
         self.selected_recordings=selected_recordings
+        self.mid_brain_circuits=['SCs','SCm','MRN','APN','PAG','ZI']
+        self.frontal_circuits=['MOs','PL','ILA','ORB','MOp','SSp']
     
     def plot_one_trial_one_neuron(self,recordings_index,trial_index,neuron_index):
         '''
@@ -92,6 +77,7 @@ class DataAnalysis():
         plt.plot(mot_timestamps[beh_range][:,1].flatten(),beh_subset)
         plt.title('Motion energy in trial')
         plt.show()
+        print('beh shp',beh_subset.shape)
         
         rate=np.array(r).flatten()
         beh_subset_aligned=self.align_rate_and_behavior(beh_subset,rate).flatten()
@@ -101,6 +87,12 @@ class DataAnalysis():
         rate_shp=rate.shape[0]
         beh_subset_aligned=beh_subset[:rate_shp]
         return beh_subset_aligned
+    
+    def extract_brain_region_neuron_indices(self,recordings_index,brain_area):
+        neurons_df=pd.read_csv(self.all_data_path+'/'+self.selected_recordings[recordings_index]+'/'+'channels.brainLocation.tsv', sep='\t')
+        subset=neurons_df[neurons_df['allen_ontology']==brain_area]
+        dat=np.array(subset.index).flatten()
+        return dat
         
         
         
