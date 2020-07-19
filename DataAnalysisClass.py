@@ -109,6 +109,48 @@ class DataAnalysis():
         subset=neurons_df[neurons_df['allen_ontology']==brain_area]
         dat=np.array(subset.index).flatten()
         return dat
+
+    def get_spikes_of_one_population(self,recordings_index,brain_area):
+        path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
+        neurons=self.extract_brain_region_neuron_indices(recordings_index,brain_area)
+        neuron_inds=np.load(path+'/'+'spikes.clusters.npy')
+        spk_tms=np.load(path+'/'+'spikes.times.npy')
+        
+        spike_times_lst=[]
+        
+        for neuron in neurons:
+            spk_ids=np.where(neuron_inds==neuron)
+            spk_tms_one_neuron=spk_tms[spk_ids]
+            spike_times_lst.append(spk_tms_one_neuron)
+            
+            
+        #print(spike_times_lst)
+        
+        return spike_times_lst
+            
+    def convert_one_population_to_rates(self,recordings_index,trial_index,brain_area):
+        path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
+        trials=np.load(path+'/'+'trials.intervals.npy')
+        spike_times_lst=self.get_spikes_of_one_population(recordings_index,brain_area)
+        
+        rates_lst=[]
+        for spk_tms_one_neuron in spike_times_lst:
+            spks_range = np.bitwise_and(spk_tms_one_neuron>=trials[trial_index][0],spk_tms_one_neuron<=trials[trial_index][1])
+            subset=spk_tms_one_neuron[spks_range]
+
+            #Create elephant SpikeTrain object
+            spk_tr=neo.SpikeTrain(subset*pq.s,t_start=trials[trial_index][0]*pq.s,t_stop=trials[trial_index][1]*pq.s)
+            #plt.eventplot(spk_tr)
+            #plt.show()
+            kernel = kernels.GaussianKernel(sigma=0.1*pq.s, invert=True)
+            #sampling_rate the same as behavior
+            r=instantaneous_rate(spk_tr,t_start=trials[trial_index][0]*pq.s,t_stop=trials[trial_index][1]*pq.s, sampling_period=0.02524578*pq.s, kernel=kernel) #cutoff=5.0)
+            rates_lst.append(r.flatten())
+    
+        rates_lst=np.array(rates_lst)
+        print(rates_lst.shape)
+        return rates_lst
+        
         
         
         
