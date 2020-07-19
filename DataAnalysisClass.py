@@ -11,6 +11,22 @@ import neo
 from elephant import kernels
 from quantities import Hz, s, ms
 
+def unzip_files(path_to_zip_files,path_to_unzip_files):
+    '''
+    Function for unzip all data files into a single directory.
+    
+    '''
+    extension = ".tar"
+
+    os.chdir(path_to_zip_files) # change directory from working dir to dir with files
+
+    for item in os.listdir(path_to_zip_files): # loop through items in dir
+        if item.endswith(extension): # check for ".zip" extension
+            file_name = os.path.abspath(item) # get full path of files
+            tar = tarfile.open(file_name, "r:")
+            tar.extractall(path_to_unzip_files+'/'+str(item))
+            tar.close()
+
 class DataAnalysis():
     def __init__(self,all_data_path, selected_recordings):
         '''
