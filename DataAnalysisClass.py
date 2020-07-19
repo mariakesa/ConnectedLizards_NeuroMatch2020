@@ -10,6 +10,7 @@ from elephant.statistics import instantaneous_rate,time_histogram
 import neo
 from elephant import kernels
 from quantities import Hz, s, ms
+import tarfile
 
 def unzip_files(path_to_zip_files,path_to_unzip_files):
     '''
