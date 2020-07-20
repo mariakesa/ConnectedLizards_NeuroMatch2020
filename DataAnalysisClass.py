@@ -200,6 +200,10 @@ class DataAnalysis():
         print(rates.shape)
 
     def twpca_model(self,recordings_index,trial_index,brain_area):
+        '''
+        https://github.com/ganguli-lab/twpca
+        pip install tensorflow==1.14
+        '''
         from twpca import TWPCA
         path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
         trials=np.load(path+'/'+'trials.intervals.npy')
