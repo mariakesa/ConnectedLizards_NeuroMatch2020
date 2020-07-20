@@ -74,12 +74,19 @@ if sl_neuron:
 else:
     sl_neuron=0
 data= get_trial_data(all_data_path,sl_neuron)
-import plotly.express as px
+scatter_kw = dict(s=2, c='k', lw=0, alpha=.8)
 idx=data.neurons==int(sl_neuron)
 y, x = data.trials[idx], data.spiketimes[idx]
-fig = px.scatter(y,x)
-fig.update_xaxes(range=[0, 5])
-st.plotly_chart(fig)
+        #print(x)
+        #print(y,x)
+plt.scatter(x, y,**scatter_kw)
+plt.title('Spike trains from neuron '+str(int(sl_neuron)))
+plt.xlabel('Time s')
+plt.ylabel('Trials')
+plt.xlim(0,5)
+plt.show()
+
+st.pyplot()
 
 def get_ix_name(all_data_path,sl_neuron):
     selected_recordings=['Richards_2017-10-31.tar']
@@ -106,7 +113,8 @@ def get_brain_areas(all_data_path):
 
 brain_areas=get_brain_areas(all_data_path)
 
-brain_option = st.selectbox('Which circuit to visualize?', brain_areas)
+#brain_option = st.selectbox('Which circuit to visualize?', brain_areas)
+brain_option=get_ix_name(all_data_path,sl_neuron)[0]
 
 st.write('You selected:', brain_option)
 
