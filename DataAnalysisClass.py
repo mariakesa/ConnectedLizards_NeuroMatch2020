@@ -27,6 +27,19 @@ def unzip_files(path_to_zip_files,path_to_unzip_files):
             tar.extractall(path_to_unzip_files+'/'+str(item))
             tar.close()
 
+
+import numpy as np
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import elephant.conversion as conv
+import neo
+import quantities as pq
+from elephant.statistics import instantaneous_rate,time_histogram
+import neo
+from elephant import kernels
+from quantities import Hz, s, ms
+
 class DataAnalysis():
     def __init__(self,all_data_path, selected_recordings):
         '''
@@ -134,6 +147,7 @@ class DataAnalysis():
         spike_times_lst=self.get_spikes_of_one_population(recordings_index,brain_area)
 
         rates_lst=[]
+        spk_tr_lst=[]
         for spk_tms_one_neuron in spike_times_lst:
             spks_range = np.bitwise_and(spk_tms_one_neuron>=trials[trial_index][0],spk_tms_one_neuron<=trials[trial_index][1])
             subset=spk_tms_one_neuron[spks_range]
@@ -145,12 +159,17 @@ class DataAnalysis():
             kernel = kernels.GaussianKernel(sigma=0.1*pq.s, invert=True)
             #sampling_rate the same as behavior
             r=instantaneous_rate(spk_tr,t_start=trials[trial_index][0]*pq.s,t_stop=trials[trial_index][1]*pq.s, sampling_period=0.02524578*pq.s, kernel=kernel) #cutoff=5.0)
+            binned_spk_tr = conv.BinnedSpikeTrain(spk_tr, binsize=0.02524578*pq.s,
+                            t_start=trials[trial_index][0]*pq.s)
+            binned_spk_tr=binned_spk_tr.to_array()
+            spk_tr_lst.append(binned_spk_tr)
             rates_lst.append(r.flatten())
 
         rates_lst=np.array(rates_lst)
-        print(rates_lst.shape)
-        return rates_lst
-
+        spk_tr_lst=np.array(spk_tr_lst)
+        print(spk_tr_lst)
+        #print(rates_lst.shape)
+        return rates_lst, spk_tr_lst
 
     def CCA_analysis(self,recordings_index,trial_index,brain_area):
         path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
@@ -186,8 +205,7 @@ class DataAnalysis():
         plt.scatter(X_train_r[:, 1], Y_train_r[:], label="train",
             marker="*", c="b", s=50)
 
-        #Can't do analysis on other trials because the number of timepoints is different!
-        #E.g. the analysis below fails
+        plt.show()
         #rates_test=self.convert_one_population_to_rates(recordings_index,2,brain_area).T
 
         #X_test_r, Y_test_r = cca.transform(rates_test, beh_subset_aligned)
@@ -196,14 +214,11 @@ class DataAnalysis():
 
         #plt.show()
 
+
         print(beh_subset_aligned.shape)
         print(rates.shape)
 
     def twpca_model(self,recordings_index,trial_index,brain_area):
-        '''
-        https://github.com/ganguli-lab/twpca
-        pip install tensorflow==1.14
-        '''
         from twpca import TWPCA
         path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
         trials=np.load(path+'/'+'trials.intervals.npy')
@@ -242,6 +257,44 @@ class DataAnalysis():
         plt.imshow(X_pred.reshape(rates.shape[2],rates.shape[1]))
         plt.show()
         plt.imshow(rates[0,:,:].T)
+
+    def GLM(self,recordings_index,trial_index,brain_area):
+        '''
+        https://github.com/slinderman/pyglm
+        '''
+        from pyglm.models import SparseBernoulliGLM
+        from pyglm.utils.basis import cosine_basis
+        path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
+        trials=np.load(path+'/'+'trials.intervals.npy')
+        rates,binned_spk_tr=self.convert_one_population_to_rates(recordings_index,trial_index,brain_area)
+        #rates=rates.T.reshape(1,rates.shape[1],rates.shape[0])
+        print(binned_spk_tr.shape)
+        binned_spk_tr_=binned_spk_tr.reshape(binned_spk_tr.shape[0],binned_spk_tr.shape[2])
+        print(binned_spk_tr_.shape)
+        N = 4       # Number of neurons
+        B = 1       # Number of "basis functions"
+        L = 10     # Autoregressive window of influence
+        basis = cosine_basis(B=B, L=L) / L
+
+        # Generate some data from a model with self inhibition
+        model = SparseBernoulliGLM(N, basis=basis)
+        model.add_data(binned_spk_tr_[:4,:].T)
+
+         # Initialize the plot
+        #_, _, handles = model.plot()
+
+        # Run a Gibbs sampler
+        N_samples = 100
+        lps = []
+        for itr in range(N_samples):
+            model.resample_model()
+            lps.append(model.log_likelihood())
+        print(lps)
+        plt.plot(lps)
+        model.plot()
+
+
+
 
 all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
 selected_recordings=['Richards_2017-10-31.tar']
