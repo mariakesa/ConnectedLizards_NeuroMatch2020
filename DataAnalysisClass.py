@@ -99,7 +99,7 @@ class DataAnalysis():
         print('r shape',r.shape)
 
         #Plot behavior motion energy
-        beh_range= np.bitwise_and(mot_timestamps[:,0]>=trials[trial_index][0],mot_timestamps[:,1]<=trials[trial_index][1])
+        beh_range= np.bitwise_and(mot_timestamps[:,1]>=trials[trial_index][0],mot_timestamps[:,1]<=trials[trial_index][1])
         #print(np.where(beh_range==True))
         #print(mot_timestamps[beh_range])
         beh_subset=mot_energy[beh_range]
