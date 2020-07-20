@@ -196,9 +196,48 @@ class DataAnalysis():
 
         #plt.show()
 
-
         print(beh_subset_aligned.shape)
         print(rates.shape)
+
+    def twpca_model(self,recordings_index,trial_index,brain_area):
+        from twpca import TWPCA
+        path=self.all_data_path+'/'+self.selected_recordings[recordings_index]
+        trials=np.load(path+'/'+'trials.intervals.npy')
+        rates=self.convert_one_population_to_rates(recordings_index,trial_index,brain_area)
+        rates=rates.T.reshape(1,rates.shape[1],rates.shape[0])#
+        print(rates.shape)#.reshape(1,260,74)
+
+        print(rates.shape)
+        #print(rates)
+        #print(rates.shape)
+        from twpca.regularizers import curvature
+
+        warp_penalty_strength = 0.05
+        time_penalty_strength = 0.5
+
+        # Add an L1 penalty on the second order finite difference of the warping functions
+        # This encourages the warping functions to be piecewise linear.
+        warp_regularizer = curvature(scale=warp_penalty_strength, power=1)
+        # Adds an L2 penatly on the second order finite difference of the temporal factors.
+        # Encourages the temporal factors to be smooth in time.
+        time_regularizer = curvature(scale=time_penalty_strength, power=2, axis=0)
+        n_components=10
+        model = TWPCA(n_components,
+              warp_regularizer=warp_regularizer,
+              time_regularizer=time_regularizer,
+              fit_trial_factors=False,
+              #nonneg=True,
+              warpinit='shift')
+        # Fit model with gradient descent, starting with a learning rate of 1e-1 for 250 iterations,
+        # and then a learning rate of 1e-2 for 500 iterations
+        X_pred=model.fit_transform(rates, lr=(1e-1, 1e-2), niter=(250, 500))
+        #print(help(TWPCA))
+        #X_pred = model.predict(rates)
+        print(X_pred.shape)
+
+        plt.imshow(X_pred.reshape(rates.shape[2],rates.shape[1]))
+        plt.show()
+        plt.imshow(rates[0,:,:].T)
 
 all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
 selected_recordings=['Richards_2017-10-31.tar']
