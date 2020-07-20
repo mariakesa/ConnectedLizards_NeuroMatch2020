@@ -9,6 +9,12 @@ from brainrender import * # <- these can be changed to personalize the look of y
 # Import scene class
 from brainrender.scene import Scene
 
+
+from affinewarp import PiecewiseWarping, SpikeData
+import numpy as np
+from affinewarp.visualization import rasters
+import matplotlib.pyplot as plt
+
 import sys
 sys.path.append('../')
 import os
@@ -19,6 +25,71 @@ from vtkplotter import *
 all_data_path='/media/maria/DATA1/Documents/NeuroMatchAcademy2020_dat/unzipped_files'
 
 caching.clear_cache()
+
+@st.cache(persist=True)
+def get_trial_data(all_data_path,sl_neuron):
+    selected_recordings=['Richards_2017-10-31.tar']
+    path=all_data_path+'/'+selected_recordings[0]
+    neuron_inds=np.load(path+'/'+'spikes.clusters.npy')
+    spk_tms=np.load(path+'/'+'spikes.times.npy')
+    trials_orig=np.load(path+'/'+'trials.intervals.npy')
+    print(trials_orig.shape)
+    #Behavioral data
+    #mot_timestamps=np.load(path+'/'+'face.timestamps.npy')
+    #mot_energy=np.load(path+'/'+'face.motionEnergy.npy')
+
+    #spk_ids=np.where(neuron_inds==618)
+    #spk_tms_one_neuron=spk_tms[spk_ids]
+
+    spikes=[]
+    neurons=[]
+    trials=[]
+    neurons_orig=[sl_neuron]
+    for neuron in neurons_orig:
+        spk_ids=np.where(neuron_inds==neuron)
+        spk_tms_one_neuron=spk_tms[spk_ids]
+        for trial in range(0,260):
+            trial_range= np.bitwise_and(spk_tms_one_neuron>=trials_orig[trial][0],spk_tms_one_neuron<=trials_orig[trial][1])
+            if trial==0:
+                #trial_range= np.bitwise_and(spk_tms_one_neuron>=trials[trial][0],spk_tms_one_neuron<=trials[trial][1])
+                subset=spk_tms_one_neuron[trial_range]
+            else:
+                subset=spk_tms_one_neuron[trial_range]-trials_orig[trial-1][1]
+            for spike in subset:
+                trials.append(trial)
+                spikes.append(spike)
+                neurons.append(neuron)
+        #Select spikes in the trial for the neuron that we care about
+        #subset=spk_tms_one_neuron[trial_range]
+
+        #print(subset)
+        #print(trial_range)
+    #print(neurons)
+    data = SpikeData(trials, spikes, neurons, tmin=0, tmax=5.0)
+    return data
+
+sl_neuron=st.text_area('Choose neuron here:')
+if sl_neuron:
+    sl_neuron=int(sl_neuron)
+else:
+    sl_neuron=0
+data= get_trial_data(all_data_path,sl_neuron)
+import plotly.express as px
+idx=data.neurons==int(sl_neuron)
+y, x = data.trials[idx], data.spiketimes[idx]
+fig = px.scatter(y,x)
+fig.update_xaxes(range=[0, 5])
+st.plotly_chart(fig)
+
+def get_ix_name(all_data_path,sl_neuron):
+    selected_recordings=['Richards_2017-10-31.tar']
+    path=all_data_path+'/'+selected_recordings[0]
+    brain_df=pd.read_csv(path+'/'+'channels.brainLocation.tsv', sep='\t')
+    brain_areas_=brain_df[brain_df.index == sl_neuron]['allen_ontology'].tolist()
+    return brain_areas_
+
+st.write(get_ix_name(all_data_path,sl_neuron))
+
 
 @st.cache(persist=True)
 
