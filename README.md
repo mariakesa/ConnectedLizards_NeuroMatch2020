@@ -18,3 +18,5 @@ Wiki on the Steinmetz'sdataset https://github.com/nsteinme/steinmetz-et-al-2019/
 Neuromatch google colab https://colab.research.google.com/github/NeuromatchAcademy/course-content/blob/master/projects/load_steinmetz_decisions.ipynb
 
 Elephant Toolkit https://elephant.readthedocs.io/en/latest/install.html
+
+affinewarp Toolkit https://github.com/ahwillia/affinewarp
