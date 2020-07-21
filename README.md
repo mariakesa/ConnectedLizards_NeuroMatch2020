@@ -13,8 +13,13 @@ Meeting with our mentor, Matthew Kaufman on
   
 Download the Steinmetz's Dataset https://figshare.com/articles/Dataset_from_Steinmetz_et_al_2019/9598406
 
-Wiki on the Steinmetz'sdataset https://github.com/nsteinme/steinmetz-et-al-2019/wiki/data-files
+Wiki on the Steinmetz's dataset https://github.com/nsteinme/steinmetz-et-al-2019/wiki/data-files
+
+Steinmetz's dataset: script for location of the units --> https://github.com/MouseLand/steinmetz2019_NMA/blob/master/steinmetz_loader.py
 
 Neuromatch google colab https://colab.research.google.com/github/NeuromatchAcademy/course-content/blob/master/projects/load_steinmetz_decisions.ipynb
 
 Elephant Toolkit https://elephant.readthedocs.io/en/latest/install.html
+
+affinewarp Toolkit https://github.com/ahwillia/affinewarp
+
