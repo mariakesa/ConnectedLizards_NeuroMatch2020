@@ -5,8 +5,8 @@
 #pip install affinewarp
 
 #To run the code:
-#Navigate to the folder of the app in the terminal
-#streamlit run app.py
+#Navigate to the folder of the a in the terminal
+#
 
 import streamlit as st
 import numpy as np
@@ -20,7 +20,7 @@ from brainrender import * # <- these can be changed to personalize the look of y
 from brainrender.scene import Scene
 
 
-#from affinewarp import PiecewiseWarping, SpikeData
+from affinewarp import PiecewiseWarping, SpikeData
 import numpy as np
 #from affinewarp.visualization import rasters
 import matplotlib.pyplot as plt
