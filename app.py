@@ -1,3 +1,13 @@
+#To install in terminal type:
+#pip install brainrender
+#pip install streamlit
+#pip install pandas
+#pip install affinewarp
+
+#To run the code:
+#Navigate to the folder of the app in the terminal
+#streamlit run app.py
+
 import streamlit as st
 import numpy as np
 from streamlit import caching
@@ -10,9 +20,9 @@ from brainrender import * # <- these can be changed to personalize the look of y
 from brainrender.scene import Scene
 
 
-from affinewarp import PiecewiseWarping, SpikeData
+#from affinewarp import PiecewiseWarping, SpikeData
 import numpy as np
-from affinewarp.visualization import rasters
+#from affinewarp.visualization import rasters
 import matplotlib.pyplot as plt
 
 import sys
@@ -93,9 +103,10 @@ def get_ix_name(all_data_path,sl_neuron):
     path=all_data_path+'/'+selected_recordings[0]
     brain_df=pd.read_csv(path+'/'+'channels.brainLocation.tsv', sep='\t')
     brain_areas_=brain_df[brain_df.index == sl_neuron]['allen_ontology'].tolist()
-    return brain_areas_
+    #return brain_df
+    return brain_areas_,brain_df
 
-st.write(get_ix_name(all_data_path,sl_neuron))
+#st.write(get_ix_name(all_data_path,sl_neuron))
 
 
 @st.cache(persist=True)
@@ -114,7 +125,7 @@ def get_brain_areas(all_data_path):
 brain_areas=get_brain_areas(all_data_path)
 
 #brain_option = st.selectbox('Which circuit to visualize?', brain_areas)
-brain_option=get_ix_name(all_data_path,sl_neuron)[0]
+brain_option=get_ix_name(all_data_path,sl_neuron)[0][0]
 
 st.write('You selected:', brain_option)
 
@@ -132,6 +143,10 @@ vp = Plotter(axes=0)
 vp.show(scene.get_actors(), viewup=(10, 0.7, 0))
 
 scene.close()
+
+brain_df=get_ix_name(all_data_path,sl_neuron)[1]
+
+st.write(brain_df)
 
 #vp = Plotter(axes=0)
 #vp.show(tutorial_scene.get_actors(), viewup=(10, 0.7, 0))
