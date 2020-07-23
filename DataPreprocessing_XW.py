@@ -108,9 +108,9 @@ def sort_cells_trials(spike_time_binned, epoch_duration = 400 , bin_size = 10):
     # Epoch duration is defined as the period after the visual stimulus
 
     # Sort into trials
-    spike_time_binned_trial = np.empty(len(spike_time_cells), dtype=object)
-    spike_time_binned_trial_response = np.empty(len(spike_time_cells), dtype=object)
-    for cell_num in np.arange(len(spike_time_cells)):
+    spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
+    spike_time_binned_trial_response = np.empty(len(spike_time_binned), dtype=object)
+    for cell_num in np.arange(len(spike_time_binned)):
         spike_time_binned_trial[cell_num] = np.empty(len(trials_intervals), dtype=object)
         spike_time_binned_trial_response[cell_num] = np.empty(len(trials_intervals), dtype=object)
   
@@ -142,11 +142,11 @@ def sort_cells_trial_types(spike_time_binned_trial_response):
     no_response_choice_trials = np.where(trials_response_choice == 0)[0]
 
     # Sort trials into response type
-    left_spike_time_response = np.empty(len(spike_time_cells), dtype=object)
-    right_spike_time_response = np.empty(len(spike_time_cells), dtype=object)
-    no_response_spike_time_response = np.empty(len(spike_time_cells), dtype=object)
+    left_spike_time_response = np.empty(len(spike_time_binned_trial_response), dtype=object)
+    right_spike_time_response = np.empty(len(spike_time_binned_trial_response), dtype=object)
+    no_response_spike_time_response = np.empty(len(spike_time_binned_trial_response), dtype=object)
     
-    for cell_num in np.arange(len(spike_time_cells)):
+    for cell_num in np.arange(len(spike_time_binned_trial_response)):
         left_spike_time_response[cell_num] = spike_time_binned_trial_response[cell_num][left_choice_trials]
         right_spike_time_response[cell_num] = spike_time_binned_trial_response[cell_num][right_choice_trials]
         no_response_spike_time_response[cell_num] = spike_time_binned_trial_response[cell_num][no_response_choice_trials]
@@ -266,12 +266,9 @@ def concat_behaviour_2_timeseries(wheel_position, epoch_duration = 400 ,bin_size
 
 
 # Check if behaviour dimension tallies with neural time series
-if concat_right_spike_times[3].shape[0] == right_concat_wheel_position.shape[0]:
-    print("The dimensions of behaviour and neural activity tallies " + "| Shape:" + str(right_concat_wheel_position.shape))
-else:
-    print("The dimensions is wrong")
+#if concat_right_spike_times[3].shape[0] == right_concat_wheel_position.shape[0]:
+#   print("The dimensions of behaviour and neural activity tallies " + "| Shape:" + str(right_concat_wheel_position.shape))
+#else:
+#    print("The dimensions is wrong")
     
-print(left_concat_wheel_position.shape)
-print(right_concat_wheel_position.shape)
-print(no_response_concat_wheel_position.shape)
 
