@@ -67,7 +67,7 @@ def get_good_cells(fdirpath): #
 
     return good_cells, brain_region, br
 
-#good_cells, brain_regions ,br = get_good_cells(data_path) # Get brain regions 
+good_cells, brain_regions ,br = get_good_cells(data_path) # Get brain regions 
 
 
 
