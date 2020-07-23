@@ -160,8 +160,6 @@ def sort_cells_trial_types(spike_time_binned_trial_response):
     
 
 
-good_cells, brain_regions ,br = spike_process.get_good_cells(data_path) # Get brain regions
-
 def sort_cells_brain_regions(spike_time_response ,*input_region):
     
     regional_spike_time_response = np.empty(len(input_region), dtype=object)
