@@ -23,3 +23,5 @@ Elephant Toolkit https://elephant.readthedocs.io/en/latest/install.html
 
 affinewarp Toolkit https://github.com/ahwillia/affinewarp
 
+Midbrain Regions: 'SCs','SCm','MRN','APN','PAG','ZI'
+Forebrain Regions: 'MOs','PL','ILA','ORB','MOp','SSp'
