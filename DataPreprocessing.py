@@ -144,7 +144,7 @@ def sort_cells_behaviour_trials(spike_time_binned, bin_size = 10):
     pre_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
     post_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
     post_go_cue_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
-    post_feedback_post_stim_spike_time_binned_trial = np.empty(len(spike_time_cells), dtype=object)
+    post_feedback_post_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
         
     for cell_num in np.arange(len(spike_time_cells)):
         
