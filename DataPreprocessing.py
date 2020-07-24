@@ -107,7 +107,7 @@ def bin_spikes(spike_times,spike_clusters,clusters_annotation, bin_size = 10):
 
 #EDIT Add Trials Intervals
 
-def sort_cells_trials(spike_time_binned,spike_time_cells, trials_intervals,trials_visual_time,epoch_duration = 2000 , bin_size = 10):
+def sort_cells_trials(spike_time_binned,spike_time_cells, trials_intervals,trials_visual_time,epoch_duration = 400 , bin_size = 10):
     # Epoch duration is defined as the period after the visual stimulus
 
     # Sort into trials
