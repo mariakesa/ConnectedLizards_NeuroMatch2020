@@ -134,6 +134,58 @@ def sort_cells_trials(spike_time_binned,spike_time_cells, trials_intervals,trial
 
 
 
+# Use to sort cells into trial types and behaviour epoch
+def sort_cells_behaviour_trials(spike_time_binned,spike_time_cells,trials_intervals, trials_visual_time,trials_gocue_times,trial_feedback_time,bin_size = 10):
+    # Epoch duration is defined as the period after the visual stimulus
+
+    # Sort into trials
+    spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
+    
+    pre_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
+    post_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
+    post_go_cue_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
+    post_feedback_post_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
+        
+    for cell_num in np.arange(len(spike_time_binned)):
+        
+        spike_time_binned_trial[cell_num] = np.empty(len(trials_intervals), dtype=object)
+        
+        pre_stim_spike_time_binned_trial[cell_num] = np.empty(len(trials_intervals), dtype=object)
+        post_stim_spike_time_binned_trial[cell_num] = np.empty(len(trials_intervals), dtype=object)
+        post_go_cue_spike_time_binned_trial[cell_num] = np.empty(len(trials_intervals), dtype=object)
+        post_feedback_post_stim_spike_time_binned_trial[cell_num] = np.empty(len(trials_intervals), dtype=object)
+        
+        # Entire trial duration
+        for i,trials_start_end in enumerate(trials_intervals):
+            # Sort spikes into their trial numbers. 
+            spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][ int(np.floor(trials_start_end[0]*(1000/bin_size))) : int(np.floor(trials_start_end[1]*(1000/bin_size)))]
+        
+        # Pre-stim epoch (Visual Stim - 500ms : Visual Stim)
+        for i,trials_start_end in enumerate(trials_intervals):
+            pre_stim_spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][(int(np.floor(trials_visual_time[i]*(1000/bin_size))-(500/bin_size))) : (int(np.floor(trials_visual_time[i]*(1000/bin_size))))]
+            
+        # Post-stim epoch (Visual Stim : Go Cue)
+        for i,trials_start_end in enumerate(trials_intervals):
+            post_stim_spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][(int(np.floor(trials_visual_time[i]*(1000/bin_size)))) : (int(np.floor(trials_gocue_times[i]*(1000/bin_size))))]
+        
+        # Post-gocue epoch (Gocue : Reward) Very short duration
+        for i,trials_start_end in enumerate(trials_intervals):
+            post_go_cue_spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][(int(np.floor(trials_gocue_times[i]*(1000/bin_size)))) : (int(np.floor(trial_feedback_time[i]*(1000/bin_size))))]
+        
+        # Post-reward epoch (Reward : Reward + 500ms)
+        for i,trials_start_end in enumerate(trials_intervals):
+            post_go_cue_spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][(int(np.floor(trial_feedback_time[i]*(1000/bin_size)))) : (int(np.floor(trial_feedback_time[i]*(1000/bin_size))+(500/bin_size)))]
+        
+    # spike_time_binned_trial returns spikes that are sorted into cells and trials
+    # spike_time_binned_trial_response returns spikes that are sorted into cells and trials, and spliced accordingly to desired epoch duration post-visual stim onset
+        
+        spike_time_binned_trial[cell_num]
+        
+    return spike_time_binned_trial, pre_stim_spike_time_binned_trial, post_stim_spike_time_binned_trial, post_go_cue_spike_time_binned_trial, post_go_cue_spike_time_binned_trial
+
+
+
+
 # Sort trials into 3 trial types based on argument (e.g. response_choice, feedback type), left,
 def sort_cells_trial_types(spike_time_binned_trial_response,trials_intervals,spike_time_cells,trials_response_choice):
 
@@ -162,13 +214,12 @@ def sort_cells_trial_types(spike_time_binned_trial_response,trials_intervals,spi
 # (Maybe i should change it to left_spike_time_response[cell_num][trial_num x # of bins] ?)
 
 
-
-def sort_cells_brain_regions(spike_time_response, input_region,brain_regions,clusters_annotation):
-
+def sort_cells_brain_regions(spike_time_response, brain_regions, clusters_annotation, input_region):
+    valid_brain_region_boo = np.array([])
     regional_spike_time_response = np.empty(len(input_region), dtype=object)
-    for i,region in enumerate(input_region):
+    for i in np.arange(len(input_region)):
         # Get brain regions that correponds to the desired region
-        valid_brain_region_boo = (np.reshape( (clusters_annotation >= 2),(-1) ) & np.reshape( (brain_regions == region),(-1) ))
+        valid_brain_region_boo = (np.reshape( (clusters_annotation >= 2),(-1) ) & np.reshape( (brain_regions == input_region[i]),(-1) ))
         # Index the spike time to get spikes from desired regions
         regional_spike_time_response[i] = spike_time_response[valid_brain_region_boo]
 
@@ -247,7 +298,7 @@ T0 = .5
 # left_spike_time_response, right_spike_time_response, no_response_spike_time_response = sort_cells_trial_types(spike_time_binned_trial_response)
 # Note that we have 3 trials types to sort for behaviour data too
 
-def concat_behaviour_2_timeseries(wheel_position, epoch_duration = 400 ,bin_size = 10):
+def concat_behaviour_2_timeseries(wheel_position,trials_response_choice,epoch_duration = 400 ,bin_size = 10):
     # Get response choice trials types
     right_choice_trials = np.where(trials_response_choice == -1)[0]
     left_choice_trials = np.where(trials_response_choice == 1)[0]
