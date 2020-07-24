@@ -135,7 +135,7 @@ def sort_cells_trials(spike_time_binned,spike_time_cells, trials_intervals,trial
 
 
 # Use to sort cells into trial types and behaviour epoch
-def sort_cells_behaviour_trials(spike_time_binned,spike_time_cells,trials_intervals , bin_size = 10):
+def sort_cells_behaviour_trials(spike_time_binned,spike_time_cells,trials_intervals, trials_visual_time,trials_gocue_times,trial_feedback_time,bin_size = 10):
     # Epoch duration is defined as the period after the visual stimulus
 
     # Sort into trials
