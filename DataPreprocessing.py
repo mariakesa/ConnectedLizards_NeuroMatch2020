@@ -139,7 +139,7 @@ def sort_cells_behaviour_trials(spike_time_binned, bin_size = 10):
     # Epoch duration is defined as the period after the visual stimulus
 
     # Sort into trials
-    spike_time_binned_trial = np.empty(len(spike_tim_binned), dtype=object)
+    spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
     
     pre_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
     post_stim_spike_time_binned_trial = np.empty(len(spike_time_binned), dtype=object)
