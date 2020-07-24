@@ -214,12 +214,12 @@ def sort_cells_trial_types(spike_time_binned_trial_response,trials_intervals,spi
 # (Maybe i should change it to left_spike_time_response[cell_num][trial_num x # of bins] ?)
 
 
-def sort_cells_brain_regions(spike_time_response, input_region,brain_regions,clusters_annotation):
-
+def sort_cells_brain_regions(spike_time_response, brain_regions, clusters_annotation, input_region):
+    valid_brain_region_boo = np.array([])
     regional_spike_time_response = np.empty(len(input_region), dtype=object)
-    for i,region in enumerate(input_region):
+    for i in np.arange(len(input_region)):
         # Get brain regions that correponds to the desired region
-        valid_brain_region_boo = (np.reshape( (clusters_annotation >= 2),(-1) ) & np.reshape( (brain_regions == region),(-1) ))
+        valid_brain_region_boo = (np.reshape( (clusters_annotation >= 2),(-1) ) & np.reshape( (brain_regions == input_region[i]),(-1) ))
         # Index the spike time to get spikes from desired regions
         regional_spike_time_response[i] = spike_time_response[valid_brain_region_boo]
 
@@ -298,7 +298,7 @@ T0 = .5
 # left_spike_time_response, right_spike_time_response, no_response_spike_time_response = sort_cells_trial_types(spike_time_binned_trial_response)
 # Note that we have 3 trials types to sort for behaviour data too
 
-def concat_behaviour_2_timeseries(wheel_position, epoch_duration = 400 ,bin_size = 10):
+def concat_behaviour_2_timeseries(wheel_position,trials_response_choice,epoch_duration = 400 ,bin_size = 10):
     # Get response choice trials types
     right_choice_trials = np.where(trials_response_choice == -1)[0]
     left_choice_trials = np.where(trials_response_choice == 1)[0]
