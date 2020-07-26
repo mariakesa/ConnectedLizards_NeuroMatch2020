@@ -174,20 +174,72 @@ def sort_cells_behaviour_trials(spike_time_binned,spike_time_cells,trials_interv
         
         # Post-reward epoch (Reward : Reward + 500ms)
         for i,trials_start_end in enumerate(trials_intervals):
-            post_go_cue_spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][(int(np.floor(trial_feedback_time[i]*(1000/bin_size)))) : (int(np.floor(trial_feedback_time[i]*(1000/bin_size))+(500/bin_size)))]
+            post_reward_spike_time_binned_trial[cell_num][i] = spike_time_binned[cell_num][(int(np.floor(trial_feedback_time[i]*(1000/bin_size)))) : (int(np.floor(trial_feedback_time[i]*(1000/bin_size))+(500/bin_size)))]
         
     # spike_time_binned_trial returns spikes that are sorted into cells and trials
     # spike_time_binned_trial_response returns spikes that are sorted into cells and trials, and spliced accordingly to desired epoch duration post-visual stim onset
         
         spike_time_binned_trial[cell_num]
         
-    return spike_time_binned_trial, pre_stim_spike_time_binned_trial, post_stim_spike_time_binned_trial, post_go_cue_spike_time_binned_trial, post_go_cue_spike_time_binned_trial
+    return spike_time_binned_trial, pre_stim_spike_time_binned_trial, post_stim_spike_time_binned_trial, post_go_cue_spike_time_binned_trial, post_reward_spike_time_binned_trial
+
+
+
+
+# Using pre-processed NMA data from https://github.com/MouseLand/steinmetz2019_NMA/blob/master/steinmetz_loader.py
+# Use to sort cells into trial types and behaviour epoch
+def NMA_sort_cells_behaviour_trials(NMA_reformated_spike_time_binned,trials_visual_time,trials_gocue_times,trial_feedback_time,bin_size ):
+    # Epoch duration is defined as the period after the visual stimulus
+
+    # Sort into trials
+    
+    pre_stim_spike_time_binned_trial = np.empty(len(NMA_reformated_spike_time_binned), dtype=object) # Create cells
+    post_stim_spike_time_binned_trial = np.empty(len(NMA_reformated_spike_time_binned), dtype=object)
+    post_go_cue_spike_time_binned_trial = np.empty(len(NMA_reformated_spike_time_binned), dtype=object)
+    post_reward_spike_time_binned_trial = np.empty(len(NMA_reformated_spike_time_binned), dtype=object)
+        
+    for cell_num in np.arange(len(NMA_reformated_spike_time_binned,)):
+        
+        pre_stim_spike_time_binned_trial[cell_num] = np.empty(len(trials_gocue_times), dtype=object) # create trials
+        post_stim_spike_time_binned_trial[cell_num] = np.empty(len(trials_gocue_times), dtype=object)
+        post_go_cue_spike_time_binned_trial[cell_num] = np.empty(len(trials_gocue_times), dtype=object)
+        post_reward_spike_time_binned_trial[cell_num] = np.empty(len(trials_gocue_times), dtype=object)
+        
+        # Pre-stim epoch (Visual Stim - 500ms : Visual Stim)
+        for i,trials_start_end in enumerate(trials_visual_time):
+            time_zero = 0
+            visual_time = int( T0 *1000/bin_size)
+            gocue_time = int( (trials_gocue_times[i] - trials_visual_time[i]) * 1000/bin_size + visual_time)
+            feedback_time = int( (trial_feedback_time[i] - trials_gocue_times[i]) * 1000/bin_size + gocue_time)
+            
+            
+            pre_stim_spike_time_binned_trial[cell_num][i] = NMA_reformated_spike_time_binned[cell_num][i][0:int(T0*1000/bin_size)]
+            
+        # Post-stim epoch (Visual Stim : Go Cue)
+            post_stim_spike_time_binned_trial[cell_num][i] = NMA_reformated_spike_time_binned[cell_num][i][visual_time:gocue_time]
+        
+        # Post-gocue epoch (Gocue : Reward) Very short duration
+            post_go_cue_spike_time_binned_trial[cell_num][i] = NMA_reformated_spike_time_binned[cell_num][i][gocue_time: feedback_time ]
+        
+        # Post-reward epoch (Reward : Reward + 500ms)
+            post_reward_spike_time_binned_trial[cell_num][i] = NMA_reformated_spike_time_binned[cell_num][i][feedback_time: feedback_time+int(T0*1000/bin_size)]
+        
+    # spike_time_binned_trial returns spikes that are sorted into cells and trials
+    # spike_time_binned_trial_response returns spikes that are sorted into cells and trials, and spliced accordingly to desired epoch duration post-visual stim onset
+                
+    return pre_stim_spike_time_binned_trial, post_stim_spike_time_binned_trial, post_go_cue_spike_time_binned_trial, post_reward_spike_time_binned_trial
+
+
+
+
+
 
 
 
 
 # Sort trials into 3 trial types based on argument (e.g. response_choice, feedback type), left,
-def sort_cells_trial_types(spike_time_binned_trial_response,trials_intervals,spike_time_cells,trials_response_choice):
+# EDIT: Removed spike_times_cell argument
+def sort_cells_trial_types(spike_time_binned_trial_response,trials_intervals,trials_response_choice):
 
     # Input: spike_time_binned_trial_response can be any spike_time_binned variable regardless of whether it has been spliced.
 
@@ -220,6 +272,29 @@ def sort_cells_brain_regions(spike_time_response, brain_regions, clusters_annota
     for i in np.arange(len(input_region)):
         # Get brain regions that correponds to the desired region
         valid_brain_region_boo = (np.reshape( (clusters_annotation >= 2),(-1) ) & np.reshape( (brain_regions == input_region[i]),(-1) ))
+        # Index the spike time to get spikes from desired regions
+        regional_spike_time_response[i] = spike_time_response[valid_brain_region_boo]
+
+    # Merge spikes across all regions
+    merged_region_spikes = []
+    for i in np.arange(len(regional_spike_time_response)):
+        merged_region_spikes = np.append(merged_region_spikes, regional_spike_time_response[i])
+
+    # Return spike time sorted into regions and merged across all regions
+    # Indexing: regional_spike_times[cell_num][trial_num][# of bins]
+    return merged_region_spikes
+
+mid_brain_circuits=['SCs','SCm','MRN','APN','PAG','ZI']
+frontal_circuits=['MOs','PL','ILA','ORB','MOp','SSp']
+
+
+# Reformated for pre-processed data
+def updated_sort_cells_brain_regions(spike_time_response, brain_regions, clusters_annotation, input_region):
+    valid_brain_region_boo = np.array([])
+    regional_spike_time_response = np.empty(len(input_region), dtype=object)
+    for i in np.arange(len(input_region)):
+        # Get brain regions that correponds to the desired region
+        valid_brain_region_boo = (brain_regions[np.where(clusters_annotation >= 2)[0]] == input_region[i])
         # Index the spike time to get spikes from desired regions
         regional_spike_time_response[i] = spike_time_response[valid_brain_region_boo]
 
@@ -298,25 +373,44 @@ T0 = .5
 # left_spike_time_response, right_spike_time_response, no_response_spike_time_response = sort_cells_trial_types(spike_time_binned_trial_response)
 # Note that we have 3 trials types to sort for behaviour data too
 
-def concat_behaviour_2_timeseries(wheel_position,trials_response_choice,epoch_duration = 400 ,bin_size = 10):
+
+# Concatenate behaviour data across the entire session.
+def concat_behaviour_2_timeseries(beh_data,trials_response_choice,trials_visual_time,trials_gocue_times,trial_feedback_time,bin_size ):
     # Get response choice trials types
     right_choice_trials = np.where(trials_response_choice == -1)[0]
-    left_choice_trials = np.where(trials_response_choice == 1)[0]
-    no_response_choice_trials = np.where(trials_response_choice == 0)[0]
+    #left_choice_trials = np.where(trials_response_choice == 1)[0]
+    #no_response_choice_trials = np.where(trials_response_choice == 0)[0]
+    
+    # Left trials
+    pre_stim_right_concat_beh_data = np.array([])
+    post_stim_right_concat_beh_data = np.array([])
+    post_go_cue_right_concat_beh_data = np.array([])
+    post_reward_right_concat_beh_data = np.array([])
 
-    left_concat_wheel_position = np.array([])
-    right_concat_wheel_position = np.array([])
-    no_response_concat_wheel_position = np.array([])
-    for trial_num in left_choice_trials:
-        left_concat_wheel_position = np.append(left_concat_wheel_position,wheel_position[trial_num,0:int(epoch_duration/bin_size)])
-    for trial_num in right_choice_trials:
-        right_concat_wheel_position = np.append(right_concat_wheel_position,wheel_position[trial_num,0:int(epoch_duration/bin_size)])
-    for trial_num in no_response_choice_trials:
-        no_response_concat_wheel_position = np.append(no_response_concat_wheel_position,wheel_position[trial_num,0:int(epoch_duration/bin_size)])
+    for i in right_choice_trials:
+        time_zero = 0
+        visual_time = int( T0 *1000/bin_size)
+        gocue_time = int( (trials_gocue_times[i] - trials_visual_time[i]) * 1000/bin_size + visual_time)
+        feedback_time = int( (trial_feedback_time[i] - trials_gocue_times[i]) * 1000/bin_size + gocue_time)
+        
+        # Post-stim epoch (Visual Stim : Go Cue)
+        pre_stim_right_concat_beh_data = np.append(pre_stim_right_concat_beh_data, beh_data[i][0:int(T0*1000/bin_size)])
+        # Post-stim epoch (Visual Stim : Go Cue)
+        post_stim_right_concat_beh_data = np.append(post_stim_right_concat_beh_data, beh_data[i][visual_time:gocue_time])
+        # Post-gocue epoch (Gocue : Reward) Very short duration
+        post_go_cue_right_concat_beh_data = np.append(post_go_cue_right_concat_beh_data, beh_data[i][gocue_time: feedback_time ])
+        # Post-reward epoch (Reward : Reward + 500ms)
+        post_reward_right_concat_beh_data  = np.append(post_reward_right_concat_beh_data, beh_data[i][feedback_time: feedback_time+int(T0*1000/bin_size)])
+    
+    # Perform Zscore on concatenated behavioural output
+    return stats.zscore(pre_stim_right_concat_beh_data), stats.zscore(post_stim_right_concat_beh_data), stats.zscore(post_go_cue_right_concat_beh_data), stats.zscore(post_reward_right_concat_beh_data)
 
-    return left_concat_wheel_position, right_concat_wheel_position, no_response_concat_wheel_position
+pre_stim_right_concat_beh_data, post_stim_right_concat_beh_data, post_go_cue_right_concat_beh_data, post_reward_right_concat_beh_data = concat_behaviour_2_timeseries(data_face,trials_response_choice,trials_visual_time,trials_gocue_times,trial_feedback_time,bin_size )
 
-#left_concat_wheel_position, right_concat_wheel_position, no_response_concat_wheel_position = concat_behaviour_2_timeseries(wheel_position, epoch_duration = 400 ,bin_size = 10)
+print(post_stim_right_concat_beh_data.shape)
+
+#pre_stim_right_concat_beh_data, post_stim_right_concat_beh_data, post_go_cue_right_concat_beh_data, post_reward_right_concat_beh_data = concat_behaviour_2_timeseries(data_face,trials_response_choice,trials_visual_time,trials_gocue_times,trial_feedback_time,bin_size )
+
 
 
 # Check if behaviour dimension tallies with neural time series
